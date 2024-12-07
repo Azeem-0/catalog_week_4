@@ -10,7 +10,7 @@ const PRIME_MODULUS: i32 = 997;
 
 #[derive(Debug)]
 pub struct Polynomial {
-    poly: Vec<BigInt>,
+    pub poly: Vec<BigInt>,
 }
 
 pub fn generate_polynomial(
@@ -49,8 +49,8 @@ pub fn generate_polynomial(
 // should make this one module.
 #[derive(Debug)]
 pub struct Share {
-    x: BigInt,
-    y: BigInt,
+    pub x: BigInt,
+    pub y: BigInt,
 }
 
 #[derive(Debug)]
@@ -73,7 +73,7 @@ fn generate_y_point(polynomial: &Polynomial, x: &BigInt) -> BigInt {
 }
 
 pub fn generate_n_shares(
-    polynomial: Polynomial,
+    polynomial: &Polynomial,
     no_of_shares: BigInt,
 ) -> Result<Shares, Box<dyn Error>> {
     let mut shares = Shares { shares: vec![] };
