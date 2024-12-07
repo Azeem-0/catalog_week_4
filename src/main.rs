@@ -1,30 +1,51 @@
 pub mod sss;
+pub mod vss;
+
+pub mod secret_sharing;
 
 use num_bigint::BigInt;
-use secret_sharing_algorithms_sss_and_vss::{
-    shamir_secret_sharing, verifiable_secret_sharing, SharingDetails,
-};
+use sss::shamir_secret_sharing;
+use vss::verifiable_secret_sharing;
+
+pub struct SecretSharingParams {
+    pub secret: BigInt,
+    pub no_of_shares: BigInt,
+    pub threshold: BigInt,
+    pub generator: BigInt,
+}
 
 fn main() {
-    let sharing_details = SharingDetails {
-        secret: BigInt::from(110),
+    let secret_sharing_params = SecretSharingParams {
+        secret: BigInt::from(65),
         no_of_shares: BigInt::from(4),
-        threshold: BigInt::from(2),
+        threshold: BigInt::from(3),
+        generator: BigInt::from(5),
     };
 
-    // shamir's secret sharing
-    // shamir_secret_sharing(
-    //     sharing_details.secret.clone(),
-    //     sharing_details.no_of_shares.clone(),
-    //     sharing_details.threshold.clone(),
-    // );
+    println!(
+        "secret : {} , no of shares : {} threshold : {}, generator : {}",
+        secret_sharing_params.secret,
+        secret_sharing_params.no_of_shares,
+        secret_sharing_params.threshold,
+        secret_sharing_params.generator
+    );
 
-    //verifiable secret sharing
+    println!("\n");
+    println!("Implementing shamir's secret sharing algorithm");
+
+    shamir_secret_sharing(
+        secret_sharing_params.secret.clone(),
+        secret_sharing_params.no_of_shares.clone(),
+        secret_sharing_params.threshold.clone(),
+    );
+
+    println!("\n");
+    println!("Implementing feldman's verifiable secret sharing algorithm");
+
     verifiable_secret_sharing(
-        sharing_details.secret.clone(),
-        sharing_details.no_of_shares.clone(),
-        sharing_details.threshold.clone(),
+        secret_sharing_params.secret.clone(),
+        secret_sharing_params.no_of_shares.clone(),
+        secret_sharing_params.threshold.clone(),
         BigInt::from(5),
-        BigInt::from(997),
     );
 }

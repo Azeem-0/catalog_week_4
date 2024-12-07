@@ -1,51 +1,41 @@
-use std::{error::Error, vec};
+use num::BigInt;
+
+use crate::secret_sharing::{
+    secret_reconstruction::reconstruct_secret,
+    secret_share_verification::Commitments,
+    secret_splitting::{LagrangePolynomial, Shares},
+};
 
 const PRIME_MODULUS: i32 = 997;
-use num::{pow, BigInt, One};
 
-use crate::sss::Polynomial;
+pub fn verifiable_secret_sharing(
+    secret: BigInt,
+    no_of_shares: BigInt,
+    threshold: BigInt,
+    generator: BigInt,
+) {
+    let polynomial: LagrangePolynomial =
+        LagrangePolynomial::generate_polynomial(secret, threshold.clone(), PRIME_MODULUS).unwrap();
 
-#[derive(Debug)]
-pub struct Commitments {
-    coefficients: Vec<BigInt>,
-}
-impl Commitments {
-    pub fn generate_commitments(
-        generator: &BigInt,
-        polynomial: &Polynomial,
-    ) -> Result<Self, Box<dyn Error>> {
-        if polynomial.poly.is_empty() {
-            return Err("Polynomial has no coefficients".into());
-        }
+    println!("{:?}", polynomial);
 
-        let mut coefficients = vec![];
+    let shares = Shares::generate_n_shares(&polynomial, no_of_shares).unwrap();
 
-        for exp in &polynomial.poly {
-            let commitment = generator.modpow(exp, &BigInt::from(PRIME_MODULUS));
-            coefficients.push(commitment);
-        }
+    let commitments: Commitments =
+        Commitments::generate_commitments(&generator, &polynomial, PRIME_MODULUS).unwrap();
 
-        Ok(Commitments { coefficients })
+    for (index, share) in shares.shares.iter().enumerate() {
+        let validation =
+            Commitments::verify_share(&share.x, &share.y, &generator, &commitments, PRIME_MODULUS);
+
+        println!(
+            "Share {} is {}",
+            index + 1,
+            if validation { "valid" } else { "invalid" }
+        );
     }
 
-    pub fn verify_share(
-        x: &BigInt,
-        y: &BigInt,
-        generator: &BigInt,
-        commitments: &Commitments,
-    ) -> bool {
-        let mut computed_commitment = BigInt::one();
-        let mut power_of_x = BigInt::one();
+    let reconstructed_secret = reconstruct_secret(&shares.shares, 3, threshold).unwrap();
 
-        for coeff_commitment in &commitments.coefficients {
-            computed_commitment = (computed_commitment
-                * coeff_commitment.modpow(&power_of_x, &BigInt::from(PRIME_MODULUS)))
-                % PRIME_MODULUS;
-            power_of_x = (power_of_x * x) % PRIME_MODULUS;
-        }
-
-        generator.modpow(y, &BigInt::from(PRIME_MODULUS)) == computed_commitment
-    }
+    println!("Reconstructed Secret : {}", reconstructed_secret);
 }
-
-// pub fn generate_coefficients
