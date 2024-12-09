@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use num::BigInt;
 use num_traits::ToPrimitive;
 
@@ -7,27 +9,44 @@ use crate::secret_sharing::{
     secret_splitting::{LagrangePolynomial, Shares},
 };
 
-const PRIME_MODULUS: i32 = 997;
-
 pub fn verifiable_secret_sharing(
     secret: BigInt,
     no_of_shares: BigInt,
     threshold: BigInt,
-    generator: BigInt,
-) {
+    prime_modulus: i32,
+) -> Result<(), Box<dyn Error>> {
+    let generator = BigInt::from(5);
+
     let polynomial: LagrangePolynomial =
-        LagrangePolynomial::generate_polynomial(secret, threshold.clone(), PRIME_MODULUS).unwrap();
+        match LagrangePolynomial::generate_polynomial(secret, threshold.clone(), prime_modulus) {
+            Ok(pol) => pol,
+            Err(err) => {
+                println!("{:?}", err);
+                return Err(err);
+            }
+        };
 
-    println!("{:?}", polynomial);
+    println!("{:?}\n", polynomial);
 
-    let shares = Shares::generate_n_shares(&polynomial, no_of_shares).unwrap();
+    let shares = match Shares::generate_n_shares(&polynomial, no_of_shares) {
+        Ok(sh) => sh,
+        Err(err) => return Err(err),
+    };
+
+    let k_shares = 3;
 
     let commitments: Commitments =
-        Commitments::generate_commitments(&generator, &polynomial, PRIME_MODULUS).unwrap();
+        match Commitments::generate_commitments(&generator, &polynomial, prime_modulus) {
+            Ok(com) => com,
+            Err(err) => {
+                println!("{}", err);
+                return Err(err);
+            }
+        };
 
     for (index, share) in shares.shares.iter().enumerate() {
         let validation =
-            Commitments::verify_share(&share.x, &share.y, &generator, &commitments, PRIME_MODULUS);
+            Commitments::verify_share(&share.x, &share.y, &generator, &commitments, prime_modulus);
 
         println!(
             "Share {} is {}",
@@ -36,16 +55,23 @@ pub fn verifiable_secret_sharing(
         );
     }
 
-    let reconstructed_secret = reconstruct_secret(&shares.shares, 3, threshold).unwrap();
+    let reconstructed_secret = match reconstruct_secret(&shares.shares, k_shares, threshold) {
+        Ok(sec) => sec,
+        Err(err) => {
+            println!("{}", err);
+            return Err(err);
+        }
+    };
 
     println!("Reconstructed Secret : {}", reconstructed_secret);
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use num_bigint::BigInt;
-    use num_traits::{One, Zero};
 
     const PRIME_MODULUS: i32 = 997;
 
@@ -57,9 +83,11 @@ mod tests {
             LagrangePolynomial::generate_polynomial(secret, threshold, PRIME_MODULUS).unwrap();
 
         let no_of_shares = BigInt::from(5);
+
         let shares = Shares::generate_n_shares(&polynomial, no_of_shares.clone()).unwrap();
 
         let generator = BigInt::from(2);
+
         let commitments =
             Commitments::generate_commitments(&generator, &polynomial, PRIME_MODULUS).unwrap();
 

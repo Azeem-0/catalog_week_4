@@ -13,8 +13,12 @@ impl LagrangePolynomial {
     pub fn generate_polynomial(
         secret: BigInt,
         threshold: BigInt,
-        PRIME_MODULUS: i32,
+        prime_modulus: i32,
     ) -> Result<LagrangePolynomial, Box<dyn Error>> {
+        if secret > BigInt::from(prime_modulus) {
+            return Err("Secret must be greater than the prime modulus.".into());
+        }
+
         let mut polynomial = LagrangePolynomial { poly: vec![] };
 
         polynomial.poly.push(secret);
@@ -23,16 +27,7 @@ impl LagrangePolynomial {
         let mut i = BigInt::one();
 
         while i < threshold {
-            let mut random_coefficient = BigInt::from(0);
-
-            loop {
-                if random_coefficient != BigInt::from(0) {
-                    break;
-                }
-
-                let random_number: i32 = rnd.gen_range(1..PRIME_MODULUS);
-                random_coefficient = BigInt::from(random_number);
-            }
+            let random_coefficient = BigInt::from(rnd.gen_range(1..prime_modulus));
 
             polynomial.poly.push(BigInt::from(random_coefficient));
 

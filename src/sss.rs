@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use num_bigint::BigInt;
 use num_traits::ToPrimitive;
 
@@ -6,26 +8,49 @@ use crate::secret_sharing::{
     secret_splitting::{LagrangePolynomial, Shares},
 };
 
-const PRIME_MODULUS: i32 = 997;
-
-pub fn shamir_secret_sharing(secret: BigInt, no_of_shares: BigInt, threshold: BigInt) {
+pub fn shamir_secret_sharing(
+    secret: BigInt,
+    no_of_shares: BigInt,
+    threshold: BigInt,
+    prime_modulus: i32,
+) -> Result<(), Box<dyn Error>> {
     let polynomial: LagrangePolynomial =
-        LagrangePolynomial::generate_polynomial(secret, threshold.clone(), PRIME_MODULUS).unwrap();
+        match LagrangePolynomial::generate_polynomial(secret, threshold.clone(), prime_modulus) {
+            Ok(pol) => pol,
+            Err(err) => {
+                println!("{:?}", err);
+                return Err(err);
+            }
+        };
 
-    println!("{:?}", polynomial);
+    println!("{:?}\n", polynomial);
 
-    let shares = Shares::generate_n_shares(&polynomial, no_of_shares).unwrap();
+    let shares = match Shares::generate_n_shares(&polynomial, no_of_shares) {
+        Ok(sh) => sh,
+        Err(err) => return Err(err),
+    };
 
-    let reconstructed_secret = reconstruct_secret(&shares.shares, 3, threshold).unwrap();
+    let k_shares = 3;
 
-    println!("Reconstructed Secret : {}", reconstructed_secret);
+    let reconstructed_secret = match reconstruct_secret(&shares.shares, k_shares, threshold) {
+        Ok(sec) => sec,
+        Err(err) => {
+            println!("{}", err);
+            return Err(err);
+        }
+    };
+
+    println!("Reconstructed Secret : {}\n", reconstructed_secret);
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::secret_sharing::secret_splitting::Share;
 
-    use super::*;
+    const PRIME_MODULUS: i32 = 97;
 
     #[test]
     fn test_split_and_reconstruct() {

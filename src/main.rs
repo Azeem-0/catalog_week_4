@@ -11,41 +11,48 @@ pub struct SecretSharingParams {
     pub secret: BigInt,
     pub no_of_shares: BigInt,
     pub threshold: BigInt,
-    pub generator: BigInt,
+    pub prime_modulus: i32,
 }
 
 fn main() {
     let secret_sharing_params = SecretSharingParams {
         secret: BigInt::from(65),
-        no_of_shares: BigInt::from(4),
+        no_of_shares: BigInt::from(5),
         threshold: BigInt::from(3),
-        generator: BigInt::from(5),
+        prime_modulus: 97,
     };
 
     println!(
-        "secret : {} , no of shares : {} threshold : {}, generator : {}",
+        "secret : {} , no of shares : {} threshold : {}, prime modulus : {}",
         secret_sharing_params.secret,
         secret_sharing_params.no_of_shares,
         secret_sharing_params.threshold,
-        secret_sharing_params.generator
+        secret_sharing_params.prime_modulus
     );
 
     println!("\n");
-    println!("Implementing shamir's secret sharing algorithm");
+    println!("Implementing shamir's secret sharing algorithm\n");
 
-    shamir_secret_sharing(
+    match shamir_secret_sharing(
         secret_sharing_params.secret.clone(),
         secret_sharing_params.no_of_shares.clone(),
         secret_sharing_params.threshold.clone(),
-    );
+        secret_sharing_params.prime_modulus.clone(),
+    ) {
+        Ok(()) => println!("Successfully implemented shamir's secret sharing"),
+        Err(err) => println!("{}", err),
+    };
 
     println!("\n");
-    println!("Implementing feldman's verifiable secret sharing algorithm");
+    println!("Implementing feldman's verifiable secret sharing algorithm\n");
 
-    verifiable_secret_sharing(
-        secret_sharing_params.secret.clone(),
-        secret_sharing_params.no_of_shares.clone(),
-        secret_sharing_params.threshold.clone(),
-        BigInt::from(5),
-    );
+    match verifiable_secret_sharing(
+        secret_sharing_params.secret,
+        secret_sharing_params.no_of_shares,
+        secret_sharing_params.threshold,
+        secret_sharing_params.prime_modulus,
+    ) {
+        Ok(()) => println!("Successfully implemented verifiable secret sharing"),
+        Err(err) => println!("{}", err),
+    };
 }

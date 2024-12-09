@@ -32,7 +32,6 @@ pub fn reconstruct_secret(
 ) -> Result<BigInt, Box<dyn std::error::Error>> {
     let mut secret: BigInt = BigInt::zero();
 
-    // Ensure there are enough shares (>= threshold)
     if BigInt::from(k_shares) < threshold {
         return Err("Not enough shares to reconstruct the secret".into());
     }
