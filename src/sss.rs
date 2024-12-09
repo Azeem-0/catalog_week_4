@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use num_bigint::BigInt;
+#[allow(unused_imports)]
 use num_traits::ToPrimitive;
 
 use crate::secret_sharing::{
@@ -54,7 +55,7 @@ mod tests {
 
     #[test]
     fn test_split_and_reconstruct() {
-        let secret = BigInt::from(12345);
+        let secret = BigInt::from(65);
         let threshold = BigInt::from(3);
         let no_of_shares = BigInt::from(5);
 
@@ -77,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_insufficient_shares() {
-        let secret = BigInt::from(98765);
+        let secret = BigInt::from(65);
         let threshold = BigInt::from(3);
         let no_of_shares: BigInt = BigInt::from(5);
 
@@ -104,7 +105,7 @@ mod tests {
 
     #[test]
     fn test_duplicate_shares() {
-        let secret = BigInt::from(98765);
+        let secret = BigInt::from(65);
         let threshold = BigInt::from(3);
         let no_of_shares: BigInt = BigInt::from(5);
 

@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use num::BigInt;
+#[allow(unused_imports)]
 use num_traits::ToPrimitive;
 
 use crate::secret_sharing::{
@@ -73,11 +74,11 @@ mod tests {
     use super::*;
     use num_bigint::BigInt;
 
-    const PRIME_MODULUS: i32 = 997;
+    const PRIME_MODULUS: i32 = 97;
 
     #[test]
     fn test_verify_share() {
-        let secret = BigInt::from(123);
+        let secret = BigInt::from(65);
         let threshold = BigInt::from(3);
         let polynomial =
             LagrangePolynomial::generate_polynomial(secret, threshold, PRIME_MODULUS).unwrap();
@@ -105,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_reconstruct_secret() {
-        let secret = BigInt::from(123);
+        let secret = BigInt::from(65);
         let threshold = BigInt::from(3);
         let polynomial = LagrangePolynomial::generate_polynomial(
             secret.clone(),
@@ -126,7 +127,7 @@ mod tests {
 
     #[test]
     fn test_invalid_share_verification() {
-        let secret = BigInt::from(123);
+        let secret = BigInt::from(65);
         let threshold = BigInt::from(3);
         let polynomial =
             LagrangePolynomial::generate_polynomial(secret, threshold, PRIME_MODULUS).unwrap();

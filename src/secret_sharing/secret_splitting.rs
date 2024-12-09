@@ -16,7 +16,7 @@ impl LagrangePolynomial {
         prime_modulus: i32,
     ) -> Result<LagrangePolynomial, Box<dyn Error>> {
         if secret > BigInt::from(prime_modulus) {
-            return Err("Secret must be greater than the prime modulus.".into());
+            return Err("Secret must be less than the prime modulus.".into());
         }
 
         let mut polynomial = LagrangePolynomial { poly: vec![] };
